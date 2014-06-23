@@ -8,7 +8,7 @@ function [X,Q] = markovchain(N,p,q,e,m,a)
 %             process could be AR(1) or ARCH.
 %            See: Cooley's RBC book, chapter 10 by K. G. Rouwenhorst
 %
-% Usage:    [X, Q] = markovchain(N,p,q,e)
+% Usage:    [X,Q] = markovchain(N,p,q,e,m,a)
 %
 % Input:     N   scalar, number of nodes for X, usually odd number
 %            p   scalar, governs cond. prob of moving up after low state
