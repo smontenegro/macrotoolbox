@@ -34,5 +34,5 @@ where 'scriptname' can be any of:
 
  - aiyagari: Aiyagari (1993) with general equilibrium
 
-If you would like to add examples to toolbox, find mistakes, or have any
-comments please write to franz.hamann@gmail.com
+If you would like to add examples to toolbox, find mistakes, or have
+any comments please write to franz.hamann@gmail.com

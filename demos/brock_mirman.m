@@ -1,36 +1,33 @@
 % BROCK_MIRMAN Brock and Mirman (1972) optimal stochastic growth model 
- clear all;
+%
+% Written by F. Hamann. Feel free to copy, change and distribute
+ fprintf('\nBrock and Mirman model \n')
 
 %% Parameters
- gamma	= 1;        % coeficiente de aversion al riesgo 2
- beta	= 0.98;     % factor de descuento
+ gamma	= 1;        % risk aversion 
+ beta	= 0.98;     % discount factor
  alpha  = 0.3;      % capital share
 
-%% Cadena de Markov de z
- zmean   = 1;       % media
- zstdv   = .1;      % desviacion estandar 0.8 y 0.3
- rho     = 0;       % autocorrelacion
- nz      = 5;       % # estados discretos
+%% Markov chain for z
+ zmean   = 1;       
+ zstdv   = .1;      
+ [z,prob] = markovchain(5,0.5,0.5,zstdv,zmean);
+
+%% State-space S = ZxK
+ k = linspace(0.001,0.5,500)';
  
- [z, PI] = rouwenhorst(nz,zmean,rho,zstdv);
+ n = length(z)*length(k); 
+ m = length(k);
 
-%% Grilla de K = {kmin<k2<k3<...<kmax}
- nk    = 500;
- kmin  = 1.0000e-03;
- kmax  = 0.5;
- k     = linspace(kmin,kmax,nk)';
+ [Z,K] = gridmake(z,k);
 
-%% Estado-espacio S = ZxK
- [Z,K] = gridmake(z',k);
-
-%% Solucion exacta
- kex = alpha*beta*zmean*K.^alpha; % evaluada en zmean
+%% Exact Solution (evaluated at zmean)
+ kex = alpha*beta*zmean*K.^alpha;    
 
 %% Conjunto de consumo factible C>0 y funcion de utilidad
- C     = zeros(nk*nz,nk);
- u     = zeros(nk*nz,nk);
+ C  = zeros(n,m);
 
- for i=1:nk    
+ for i=1:m    
     C(:,i)=Z.*K.^alpha - k(i);   
  end
  if gamma==1;
@@ -39,19 +36,21 @@
     u = (C.^(1-gamma))./(1-gamma); 
  end
  
- u(C<=0)=-Inf; clear C;
+ u(C<=0)=-Inf; 
 
-%% Matriz de probabilidad de transicion
- P = kron(speye(nk,nk),repmat(PI,nk,1));
+%% Transition probability matrix 
+ P = kron(speye(m,m),repmat(prob,m,1));
 
-%% Ecuacion de Bellman
- [v,x,pstar] = solvedp(u,P,beta,'policy');  clear P u;
+%% Bellman equation
+ [v,x,pstar] = solvedp(u,P,beta,'policy');  clear P u C;
 
-%% Calculo de la distribucion estacionaria
- pie   = markov(pstar);
- figure(1); bar(pie)
- kmean = k(x)'*pie
+%% Stationary density
+ d = markov(pstar);
+
+%% Plot figures 
+ figure(1); bar(d)
+ kmean = k(x)'*d
  cmean = zmean*kmean^alpha-kmean
 
-%% Grafica de comparacion solucion numerica vs exacta
+% Numeric vs exact solution
  figure(2); scatter(K,k(x)); hold on; scatter(K,kex); hold off

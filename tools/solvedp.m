@@ -83,8 +83,7 @@ switch alg
   end
     
 end
-  
-  
+    
 function [v,x] = valmax(v,f,P,beta)
 [n,m]=size(f);
 [v,x]=max(f+beta.*reshape(P*v,n,m),[],2);

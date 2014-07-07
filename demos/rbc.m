@@ -1,56 +1,49 @@
 % RBC.M Solves standard real business cycle model with inelastic labor
 %       supply. 
 %
-% See any macro textbook.
-%
 % Written by F. Hamann. Feel free to copy, change and distribute
+ fprintf('\nReal business cycle model \n')
 
-% Model parameters
-  beta  =  0.98;                % discount factor
-  mu    =  2.0;                 % utility parameter
-  alpha =  0.3;                 % production parameter
-  delta =  0.1;                 % depreciation rate
-  sigma =  0.35;                 % productivity shock volatility
-  rho   = 0.5;                  % productivity shock persistence
+%% Parameters
+ beta  =  0.98;                    % discount factor
+ mu    =  2.0;                     % utility parameter
+ alpha =  0.3;                     % production parameter
+ delta =  0.1;                     % depreciation rate
+ sigma =  0.35;                    % productivity shock volatility
+ rho   =  0.5;                     % productivity shock persistence
+  
+%% Approximate z with nz discrete states AR(1)
+ nz        =  9;                   % gridpoints in Z
+ [z, prob] = rouwenhorst(nz,0,rho,sigma);
+ z         = exp(z);
+  
+%% Construct state space
+ nk       =  100;                  % gridpoints of K
+ k        = linspace(0.1,20,nk);
+ [Z,K,Kp] = gridmake(z',k',k');
 
-  n1 =  100;                    % number of endogenous states
-  n2 =  9;                      % number of exogenous states
-  m  =  n1;                     % number of actions
-  n  = n1*n2;
-  
-% Approximate productivity shocks with n2 states Markov chain
-  [a, prob] = rouwenhorst(n2,0,rho,sigma)
-  a = exp(a);
-  
-% Construct state space
-  kmin  = 0.1;                       % minimum state
-  kmax  = 20;                      % maximum state
-  k = linspace(kmin,kmax,n1);
-  [A,K,Knext] = gridmake(a',k',k');
-  
-% Construct the reward function, f
-  c = A.*K.^alpha + (1-delta)*K - Knext;
-  f = c.^(1-mu)./(1-mu);
-  i = find(c<0);
-  f(i) = NaN;
-  f = reshape(f,n,m);
-  
-% Construct the transition matrix
-  PI = repmat(prob,n1,1);                         % stacks [prob;prob; ... prob] = PI
-  I  = speye(n1,n1);                              % sparse identity (avoid mem troubles)
-  P  = kron(I,PI);                                % stack moving PI one place columnwise
-
-% Solve the DP problem using policy iteration
-  [v,x,Popt] = solvedp(f,P,beta,'policy');
-
-% Solve infinite-horizon model via function iteration
-  %[v,x,pstar] = solvedp(f,P,delta,'value');
+ m     = nk;                       % number of actions
+ n     = nk*nz;                    % number of states
  
- piss = ergdist(Popt);
+%% Construct the return function, u
+  C = Z.*K.^alpha + (1-delta)*K - Kp;
+  u = C.^(1-mu)./(1-mu); u(C<=0) = NaN;
+  u = reshape(u,n,m);
+  
+%% Construct the transition matrix
+  P  = kron(speye(m,m),repmat(prob,m,1));
+  
+%% Solve the DP problem using policy iteration
+  [v,x,pstar] = solvedp(u,P,beta,'policy'); clear P u C;
+ 
+  d = ergdist(pstar);
 
-  v = reshape(v,n2,n1);
-  figure(1); surf(k,a,v);
-  xlabel('k'); ylabel('a'); zlabel('v');
+  v = reshape(v,nz,nk);
+  figure(1); surf(k,z,v);
+  xlabel('k'); ylabel('z'); zlabel('v');
+  title('Value function')
 
-  figure(2); bar(piss);
-  title('Ergodic density of K')
+  d = reshape(d,nz,nk);
+  figure(2); surf(k,z,d);
+  xlabel('k'); ylabel('z'); zlabel('d');
+  title('Stationary density')

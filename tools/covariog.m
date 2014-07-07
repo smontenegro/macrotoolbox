@@ -1,19 +1,20 @@
 function c = covariog(X,maxtau);
 
-% COVARIOG   Computes covariograms
+% COVARIOG   Covariograms
+%
 % Usage:
 %            c = covariog(X,maxtau)  
 %
-% calculates the covariogram for each column of the T x n matrix X where
+% Note: calculates the covariogram for each column of the Txn matrix X where
 %
 %       c(tau,:)=cov( X(t,:), X(t-tau,:) ),  tau=-maxtau,...,maxtau
 %
-% Thus, the ith column of c is the covariogram for the ith column of X, i=1,...n.
+% The ith column of c is the covariogram for the ith column of X, i=1,...n.
 
 
 [T,n]=size(X);
 if T-maxtau<=0;
-  str='The number of observations in the time series must be larger than tau';
+  str='Number of observations in time series must be larger than tau';
   error(str);
 end;
 for i=1:n;

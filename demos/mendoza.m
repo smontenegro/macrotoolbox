@@ -1,10 +1,9 @@
 % MENDOZA Mendoza (1991) Small Open Economy Real Business Cycle Model 
-
+%
 % Written by F. Hamann. Feel free to copy, change and distribute
+ fprintf('\nMendoza 1991 model \n')
 
- clear all
-
-% Model Parameters
+%% Model Parameters (values taken from AER published paper)
  gamma  = 2.0;                               % Risk aversion coefficient 
  omega  = 1.455;                             % Labor elasticity
  beta   = 0.11;                              % discount factor constant  
@@ -31,7 +30,6 @@ tby = tb/yss;
 cay = (r*ass + tb)/yss; 
 a2y = -ass/yss;
 
- 
 %% Construct state-space, reward function and transition matrix
 % Number of actions and states 
  n = [4 22 22];                              % # states n = [4 22 22]; 
@@ -50,18 +48,17 @@ a2y = -ass/yss;
  s2   = exp([-sigman;sigman]);
  
 % Original bounds in Mendoza(1991) 
-% kmin = 3.25;  kmax = 3.56;  k = linspace(kmin,kmax,n(3));               
-% amin = -1.42; amax = 0.08;  a = linspace(amin,amax,n(2));               
+ kmin = 3.25;  kmax = 3.56;  k = linspace(kmin,kmax,n(3));               
+ amin = -1.42; amax = 0.08;  a = linspace(amin,amax,n(2));               
 
- kmin = kss*0.95; kmax = kss*1.05; k = linspace(kmin,kmax,n(3));
- amin = ass*2; amax = ass*0; a = linspace(amin,amax,n(2));
+% kmin = kss*0.95; kmax = kss*1.05; k = linspace(kmin,kmax,n(3));
+% amin = ass*2; amax = ass*0; a = linspace(amin,amax,n(2));
 
  [S1,S2,A,K] = gridmake(s1,s2,a',k');           
  [aa,kk]     = gridmake(a',k');
 
 % Construct the reward function, f
  c = zeros(N,M);
- f = zeros(N,M);
  L = ((1-alpha)*S1.*K.^alpha).^(1/(alpha+omega-1));
  Y = S1.*K.^alpha.*L.^(1-alpha);
 
